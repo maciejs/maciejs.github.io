@@ -2,68 +2,79 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Kalkulator BMI z przedziałami wag</title>
+<title>Kalkulator wagowych przedziałów BMI</title>
 <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; }
-    input { padding: 6px; width: 100%; margin: 6px 0; }
-    button { padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; }
-    .box { margin-top: 20px; padding: 15px; background: #f2f2f2; border-radius: 8px; }
-    .row { margin-bottom: 8px; }
+body {
+    font-family: Arial, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+}
+input {
+    font-size: 18px;
+    padding: 6px;
+    width: 120px;
+}
+table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+}
+td, th {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+th {
+    background: #eee;
+}
 </style>
 </head>
 <body>
 
-<h2>Kalkulator BMI + przedziały wagowe</h2>
+<h2>Kalkulator wagowych przedziałów BMI</h2>
 
-<label>Wzrost (cm):</label>
-<input type="number" id="height" placeholder="np. 178">
+<label for="height">Wzrost (cm): </label>
+<input id="height" type="number" min="100" max="250" value="180" oninput="calculate()">
 
-<label>Masa (kg):</label>
-<input type="number" id="weight" placeholder="np. 75">
-
-<button onclick="calculate()">Oblicz</button>
-
-<div class="box" id="result"></div>
+<table id="resultTable">
+    <tr><th>Kategoria</th><th>Zakres w kg</th></tr>
+</table>
 
 <script>
 function calculate() {
-    let h = parseFloat(document.getElementById("height").value);
-    let w = parseFloat(document.getElementById("weight").value);
+    const h = document.getElementById("height").value / 100;
+    if (!h || h < 1) return;
 
-    if (!h || h < 50 || h > 250) {
-        document.getElementById("result").innerHTML = "Podaj prawidłowy wzrost.";
-        return;
-    }
+    function kg(bmi) { return (bmi * h * h).toFixed(1); }
 
-    let m = h / 100;
+    const ranges = [
+        ["Niedowaga",              "< " + kg(18.5)],
+        ["Norma",                  kg(18.5) + " – " + kg(24.9)],
+        ["Nadwaga",                kg(25.0) + " – " + kg(29.9)],
+        ["Otyłość I stopnia",      kg(30.0) + " – " + kg(34.9)],
+        ["Otyłość II stopnia",     kg(35.0) + " – " + kg(39.9)],
+        ["Otyłość III stopnia",    "> " + kg(40.0)]
+    ];
 
-    // BMI
-    let bmi = w ? (w / (m * m)) : null;
+    const table = document.getElementById("resultTable");
+    table.innerHTML = "<tr><th>Kategoria</th><th>Zakres w kg</th></tr>";
 
-    // Przedziały wagowe
-    let under = 18.5 * m * m;
-    let normal_min = 18.5 * m * m;
-    let normal_max = 24.9 * m * m;
-    let overweight_min = 25 * m * m;
-    let overweight_max = 29.9 * m * m;
-    let obese = 30 * m * m;
-
-    let html = "";
-
-    if (bmi) {
-        html += `<div class='row'><b>Twoje BMI:</b> ${bmi.toFixed(1)}</div>`;
-    }
-
-    html += `
-        <h3>Przedziały wagowe dla wzrostu ${h} cm:</h3>
-        <div class="row">Niedowaga: &lt; ${under.toFixed(1)} kg</div>
-        <div class="row">Waga prawidłowa: ${normal_min.toFixed(1)} – ${normal_max.toFixed(1)} kg</div>
-        <div class="row">Nadwaga: ${overweight_min.toFixed(1)} – ${overweight_max.toFixed(1)} kg</div>
-        <div class="row">Otyłość: ≥ ${obese.toFixed(1)} kg</div>
-    `;
-
-    document.getElementById("result").innerHTML = html;
+    ranges.forEach(r => {
+        const row = document.createElement("tr");
+        const cat = document.createElement("td");
+        const val = document.createElement("td");
+        cat.textContent = r[0];
+        val.textContent = r[1];
+        row.appendChild(cat);
+        row.appendChild(val);
+        table.appendChild(row);
+    });
 }
+
+calculate();
 </script>
 
 </body>
